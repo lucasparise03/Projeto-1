@@ -1,33 +1,31 @@
-const db_mongoose = require('./config/db_mongoose');
+const express = require('express');
+const app = express();
 const routes = require('./routers/route');
-const mongoose = require('mongoose');
-const express = require('express');
-const unirest = require('unirest');
-const app = express();
+const handlebars = require('express-handlebars');
+app.use('/public', express.static('public'));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+const bodyParser = require("body-parser");
+
+app.use(bodyParser.urlencoded({
+    extended: true
+}));
+
+app.use(bodyParser.json());
+
+app.engine('handlebars', handlebars.engine({ defaultLayout: false }));
+app.set('view engine', 'handlebars');
 
 app.use(routes);
 
-
-mongoose.connect(db_mongoose.connection,{}).then(()=>{
-    console.log('Conectado com o BD');
-}).catch(()=>{
-        console.log('Erro na conexão com o BD');
+app.use(function (req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+    res.contentType('json')
+    next();
 });
 
-app.use(
-    express.urlencoded({
-      extended: true
-    })
-)
-
-app.listen(8081, function(){
-        console.log("Servidor no http://localhost:8081")
-});
+app.listen(process.env.port || 3000);
 
 
-//var receitas = unirest.get('http://localhost:8081/api/receitas');
-//console.log(receitas);
-
+console.log('Running at Port 3000');
